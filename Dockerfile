@@ -1,15 +1,19 @@
-FROM python:3.10.8-slim-buster
+FROM python:3.10-slim-bookworm
 
-WORKDIR /Jisshu-filter-bot
-RUN chmod 777 /Jisshu-filter-bot
+WORKDIR /app
 
-RUN apt update && apt install -y --no-install-recommends git \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends git dos2unix && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -U pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+
+RUN dos2unix start.sh && find . -name "*.py" -exec dos2unix {} +
 RUN chmod +x start.sh
 
 CMD ["bash", "start.sh"]
