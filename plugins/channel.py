@@ -59,20 +59,24 @@ movie_files = defaultdict(list)
 POST_DELAY = 10
 processing_movies = set()
 
+# इस लाइन को पक्का करें कि यह ऐसी ही है
 media_filter = filters.document | filters.video | filters.audio
-
 
 @Client.on_message(filters.chat(CHANNELS) & media_filter)
 async def media(bot, message):
     bot_id = bot.me.id
     media = getattr(message, message.media.value, None)
-    if media.mime_type in ["video/mp4", "video/x-matroska", "document/mp4", "audio/mp3"]:
+    
+    # यहाँ हमने ऑडियो के MIME types (audio/mp4, audio/mpeg आदि) जोड़ दिए हैं
+    if media.mime_type in ["video/mp4", "video/x-matroska", "document/mp4", "audio/mp4", "audio/mp3 "audio/x-m4a", "audio/mpeg", "audio/x-wav"]:
         media.file_type = message.media.value
         media.caption = message.caption
         success_sts = await save_file(media)
+        
         if success_sts == "suc" and await db.get_send_movie_update_status(bot_id):
             file_id, file_ref = unpack_new_file_id(media.file_id)
             await queue_movie_file(bot, media)
+
 
 
 async def queue_movie_file(bot, media):
@@ -336,4 +340,5 @@ def format_file_size(size_bytes):
             return f"{size_bytes:.2f} {unit}"
         size_bytes /= 1024
     return f"{size_bytes:.2f} PB"
+
 
